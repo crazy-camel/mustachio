@@ -1,0 +1,19 @@
+ErrorDocument 500 /500.html
+ErrorDocument 404 /404.html
+
+DirectoryIndex /cgi-bin/mustachio.cgi
+
+Options -Multiviews
+
+
+
+RewriteEngine on
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{PATH_INFO} ^(.*\.json/.*)$
+RewriteRule ^(.*)$ /cgi-bin/mustachio.cgi/filter/json/$1 [L]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{PATH_INFO} ^(.[^\.]*)$
+RewriteRule ^(.*)$ /cgi-bin/mustachio.cgi/$1 [L]
+

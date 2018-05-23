@@ -1,0 +1,11 @@
+{
+	"database": {
+		"driver": "sqlite",
+		"path": "./db.sqlite"
+	},
+	"guards": {
+		"Auth": { 
+			"table": "users"
+		}
+	}
+}
