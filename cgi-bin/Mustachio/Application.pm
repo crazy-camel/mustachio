@@ -34,23 +34,38 @@ sub respond
 {
 	my ($self, $query) = @_;
 	
-	print $query->header()	;
-
 	my $action = Mustachio::Action->new( 
 		path_info => $query->path_info,
 		query_string => $query->query_string
 	);
 
-	print dump($action);
-	
-	my $response = Mustachio::Response->new( query => $query );
+	my $response = Mustachio::Response->new( 
+						query => $query,
+						base => $action->base,
+						model => $action->json
+					);
 
-	if ( !$action->view )
+
+	if ( $action->filter )
 	{
-		$response->set404( $action->parameters )
+		return $response->filter(
+			filter => $action->filter
+			)->refine(
+			parameters => $action->parameters
+			)->generate();
 	}
 
-	return $response->generate();
+	if ( $action->view )
+	{
+		return $response->refine(
+			parameters => $action->parameters
+			)->generate();
+	}
+
+	return $response->set404(
+			parameters => $action->parameters
+			)->generate();
+
 }
 
 

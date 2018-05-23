@@ -8,12 +8,11 @@ Options -Multiviews
 
 
 RewriteEngine on
+RewriteCond %{REQUEST_URI} !-f
+RewriteCond %{REQUEST_URI} ^(.*\.json/.*)$
+RewriteRule ^(.*)$ /cgi-bin/mustachio.cgi/$1 [L]
 
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{PATH_INFO} ^(.*\.json/.*)$
-RewriteRule ^(.*)$ /cgi-bin/mustachio.cgi/filter/json/$1 [L]
-
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{PATH_INFO} ^(.[^\.]*)$
+RewriteCond %{REQUEST_URI} ^(.[^\.]*)$
 RewriteRule ^(.*)$ /cgi-bin/mustachio.cgi/$1 [L]
 

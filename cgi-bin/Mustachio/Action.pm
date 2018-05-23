@@ -1,6 +1,7 @@
 package Mustachio::Action;
 
 use Path::Tiny 'path';
+use Data::Dump 'dump';
 use URI::Query;
 
 my $types = {
@@ -24,13 +25,13 @@ sub new
 
         if ( $base->child( @dir )->is_dir() )
         {
-            my $dir = $base->child( @dir );
-
+            my $directory = $self->{ 'base' } = $base->child( @dir );
+            
             foreach my $type ( keys %$types )
             {
-                if ( $dir->child( $types->{ $type } )->exists() )
+                if ( $directory->child( $types->{ $type } )->exists() )
                 {
-                    $self->{ $type } = $dir->child( $types->{ $type } );
+                    $self->{ $type } = $directory->child( $types->{ $type } );
                 }
             }
 
@@ -44,6 +45,23 @@ sub new
     if ( @parameters )
     {
         @parameters = reverse @parameters;
+
+        # lets see if the are looking to filter a JSON file
+        if ( $parameters[ 0 ] =~ m/\.json/ )
+        {
+            my $file = shift( @parameters );
+
+            my $filter = $self->{ 'base' }->child( $file );
+
+            # lets remove the view since this is a filter command
+            $self->{ 'view' } = undef;
+
+            if ( $filter->is_file() )
+            {
+                $self->{ 'filter' } = $filter;
+            }
+
+        }
         push @parameters, '*' if ( @parameters % 2 != 0 );
     }
 
@@ -54,6 +72,7 @@ sub new
 
         @parameters = ( @parameters, %params );
     }
+
     # --- /Parameters ----
 
     $self->{ 'parameters' } = [ @parameters ];
@@ -61,61 +80,46 @@ sub new
     return bless $self, $class;
 }
 
-sub has
-{
-    my ( $self, $type ) = ( @_ );
-
-    if ( $type eq 'view' )
-    {
-        return ( $self->{ 'view' } ) ? 1 : 0;
-    }
-
-    if ( $type eq 'json' )
-    {
-        return ( $self->{ 'json' } ) ? 1 : 0;
-    }
-
-    if ( $type eq 'sql' )
-    {
-        return ( $self->{ 'sql' } ) ? 1 : 0;
-    }
-
-    if ( $type eq 'parameters' )
-    {
-        return ( keys %{ $self->{ 'parameters' } } ) ? 1 : 0;
-    }
-
-    return return 0;
-}
-
 sub parameters
 {
     my ( $self ) = @_;
-    return $self->{'parameters'};
+    return $self->{ 'parameters' };
 }
 
 sub json
 {
     my ( $self ) = @_;
-    return $self->{'json'};
+    return $self->{ 'json' };
 }
 
 sub sql
 {
     my ( $self ) = @_;
-    return $self->{'sql'};
+    return $self->{ 'sql' };
 }
 
 sub view
 {
     my ( $self ) = @_;
-    return $self->{'view'};
+    return $self->{ 'view' };
+}
+
+sub base
+{
+    my ( $self ) = @_;
+    return $self->{ 'base' };
+}
+
+sub filter
+{
+    my ( $self ) = @_;
+    return $self->{ 'filter' };
 }
 
 sub guard
 {
     my ( $self ) = @_;
-    return $self->{'guard'};
+    return $self->{ 'guard' };
 }
 
 1;
