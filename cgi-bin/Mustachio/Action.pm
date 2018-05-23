@@ -88,4 +88,34 @@ sub has
     return return 0;
 }
 
+sub parameters
+{
+    my ( $self ) = @_;
+    return $self->{'parameters'};
+}
+
+sub json
+{
+    my ( $self ) = @_;
+    return $self->{'json'};
+}
+
+sub sql
+{
+    my ( $self ) = @_;
+    return $self->{'sql'};
+}
+
+sub view
+{
+    my ( $self ) = @_;
+    return $self->{'view'};
+}
+
+sub guard
+{
+    my ( $self ) = @_;
+    return $self->{'guard'};
+}
+
 1;

@@ -34,15 +34,23 @@ sub respond
 {
 	my ($self, $query) = @_;
 	
+	print $query->header()	;
+
 	my $action = Mustachio::Action->new( 
 		path_info => $query->path_info,
 		query_string => $query->query_string
 	);
+
+	print dump($action);
 	
 	my $response = Mustachio::Response->new( query => $query );
 
+	if ( !$action->view )
+	{
+		$response->set404( $action->parameters )
+	}
 
-	return $response->redirect( '/100.html' )->generate();
+	return $response->generate();
 }
 
 
