@@ -14,33 +14,9 @@ my $types = {
 
 sub new
 {
-    my ( $class, $args, $self, @parameters ) = ( shift, { @_ }, {}, () );
+    my ( $class, $args ) = ( shift, { @_ } );
 
-    my $base = path( $ENV{ 'DOCUMENT_ROOT' } );
-
-    my @fragments = grep { $_ ne '' } split /\//, $args->{ 'path_info' };
-
-    for ( my $i = $#fragments; $i > -1; $i-- )
-    {
-        my @dir = @fragments[ 0 .. $i ];
-
-        if ( $base->child( @dir )->is_dir() )
-        {
-            my $directory = $self->{ 'base' } = $base->child( @dir );
-
-            foreach my $type ( keys %$types )
-            {
-                if ( $directory->child( $types->{ $type } )->exists() )
-                {
-                    $self->{ $type } = $directory->child( $types->{ $type } );
-                }
-            }
-
-            last;
-        }
-
-        push @parameters, $fragments[ $i ];
-    }
+    my $self = $class->resolve( $args->{'query'} ) 
 
     # --- Parameters ----
     if ( @parameters )
@@ -105,7 +81,7 @@ sub resolve
 
         push @parameters, $fragments[ $i ];
     }
-    
+
     # lets reverse the order to ensure it makes sense for parsing later
     @parameters = reverse @parameters if ( @parameters );
 

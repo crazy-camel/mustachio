@@ -1,5 +1,6 @@
 package Mustachio::Response::Filter;
 
+use base 'Mustachio::Response::Base';
 
 sub new 
 {
