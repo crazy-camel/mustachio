@@ -3,7 +3,7 @@ package Mustachio::Application;
 use Data::Dump 'dump';
 use JSON::Tiny 'decode_json';
 
-use Mustachio::Response;
+use Mustachio::Response::Factory;
 use Mustachio::Action;
 
 sub new
@@ -34,15 +34,15 @@ sub respond
 {
 	my ($self, $query) = @_;
 	
-	my $action = Mustachio::Action->new( 
+	my $action = Mustachio::Action->new(
+		query => $query,
 		path_info => $query->path_info,
 		query_string => $query->query_string
 	);
 
-	my $response = Mustachio::Response->new( 
-						query => $query,
-						base => $action->base,
-						model => $action->json
+	my $response = Mustachio::Response::Factory->create( 
+						action => $action
+						query => $query
 					);
 
 

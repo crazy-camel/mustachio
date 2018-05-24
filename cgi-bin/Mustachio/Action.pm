@@ -3,6 +3,7 @@ package Mustachio::Action;
 use Path::Tiny 'path';
 use Data::Dump 'dump';
 use URI::Query;
+use Switch;
 
 my $types = {
     view  => 'view.html',
@@ -26,7 +27,7 @@ sub new
         if ( $base->child( @dir )->is_dir() )
         {
             my $directory = $self->{ 'base' } = $base->child( @dir );
-            
+
             foreach my $type ( keys %$types )
             {
                 if ( $directory->child( $types->{ $type } )->exists() )
@@ -80,6 +81,72 @@ sub new
     return bless $self, $class;
 }
 
+sub resolve
+{
+    my ( $self, $query ) = @_;
+
+    my ( $base, $path, $filter, @parameters ) = ( path( $ENV{ 'DOCUMENT_ROOT' } ), undef, undef, () );
+
+    my @fragments = grep { $_ ne '' } split /\//, $query->path_info;
+
+    for ( my $i = $#fragments; $i > -1; $i-- )
+    {
+        my @dir = @fragments[ 0 .. $i ];
+
+        if ( $base->child( @dir )->is_dir() )
+        {
+            $path = $base->child( @dir );
+
+            # Lets check to  see if this a filter or not
+            $filter = $self->filter( $path, reverse @parameters );
+
+            last;
+        }
+
+        push @parameters, $fragments[ $i ];
+    }
+    
+    # lets reverse the order to ensure it makes sense for parsing later
+    @parameters = reverse @parameters if ( @parameters );
+
+    return { path => $path, filter => $filter, parameters => [ @parameters ] }
+}
+
+
+sub filter
+{
+    my ( $self, $path, @parameters ) = @_;
+
+    if ( @parameters && substr($parameters[0], -5) eq '.json' )
+    {
+        if ( $path->child( $parameters[0] )->is_file() )
+        {
+            return $path->child( $parameters[0] )
+        }
+    }
+}
+
+
+sub parameters
+{
+    my ( $self, $path, $filters ) = @_;
+
+
+}
+
+sub is
+{
+    my ( $self, $type ) = @_;
+
+    switch ( $type )
+    {
+        case 'view'   { return ( $self->{ 'view' }  && !$self->{ 'filter' } ) ? 1 : 0 }
+        case 'filter' { return ( $self->{ 'filter' } )   ? 1 : 0 }
+        case 'redirect' { return ( $self->{ 'redirect' } ) ? 1 : 0 }
+        else { return 0 }
+    }
+}
+
 sub parameters
 {
     my ( $self ) = @_;
@@ -120,6 +187,12 @@ sub guard
 {
     my ( $self ) = @_;
     return $self->{ 'guard' };
+}
+
+sub query
+{
+    my ( $self ) = @_;
+    return $self->{ 'query' };
 }
 
 1;
